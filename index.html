@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrono-Morphic Canvas - A Temporal Art Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            background: #000;
+            color: #fff;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        #info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 300px;
+            transition: opacity 0.5s;
+        }
+
+        #info-panel.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .info-row {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .label {
+            color: #888;
+        }
+
+        .value {
+            color: #0ff;
+            font-weight: bold;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn.active {
+            background: rgba(0, 255, 255, 0.3);
+            border-color: #0ff;
+        }
+
+        #fingerprint-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 11px;
+            max-width: 250px;
+        }
+
+        #fingerprint-code {
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        #welcome {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            max-width: 600px;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        #welcome.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #welcome h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #0ff, #f0f, #ff0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #welcome p {
+            margin: 15px 0;
+            line-height: 1.6;
+            color: #aaa;
+        }
+
+        #start-btn {
+            margin-top: 25px;
+            padding: 12px 30px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #0ff, #f0f);
+            border: none;
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div id="welcome">
+        <h1>CHRONO-MORPHIC CANVAS</h1>
+        <p>A living artwork born from the intersection of time, chaos, and consciousness.</p>
+        <p>Each moment creates a unique pattern that will never exist again.</p>
+        <p><strong>Instructions:</strong> Move your mouse to paint with particles. Click to create ripples. Press keys 1-5 for different modes.</p>
+        <button id="start-btn">ENTER THE CANVAS</button>
+    </div>
+
+    <div id="info-panel">
+        <div class="info-row">
+            <span class="label">Temporal State:</span>
+            <span class="value" id="time-state">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Moon Phase:</span>
+            <span class="value" id="moon-phase">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Season Energy:</span>
+            <span class="value" id="season">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Chaos Index:</span>
+            <span class="value" id="chaos-index">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Active Particles:</span>
+            <span class="value" id="particle-count">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Current Mode:</span>
+            <span class="value" id="current-mode">--</span>
+        </div>
+    </div>
+
+    <div id="fingerprint-display">
+        <div class="pulse">Your Temporal Fingerprint:</div>
+        <div id="fingerprint-code">--</div>
+        <div style="margin-top: 10px; font-size: 10px; color: #666;">
+            This unique code represents your journey through time and space.
+        </div>
+    </div>
+
+    <div id="controls">
+        <button class="btn" id="sound-toggle">Sound: OFF</button>
+        <button class="btn" id="info-toggle">Hide Info</button>
+        <button class="btn" id="save-btn">Save Frame</button>
+        <button class="btn" id="reset-btn">Reset</button>
+    </div>
+
+    <script src="chrono-morphic.js"></script>
+</body>
+</html>
