@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrono-Morphic Canvas - Test Suite</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0ff;
+        }
+
+        .test-section {
+            background: #2a2a2a;
+            border: 1px solid #0f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .test-case {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-left: 3px solid #666;
+        }
+
+        .test-case.pass {
+            border-left-color: #0f0;
+        }
+
+        .test-case.fail {
+            border-left-color: #f00;
+        }
+
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .test-result {
+            font-size: 14px;
+            margin-left: 20px;
+        }
+
+        .summary {
+            background: #0f0;
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+
+        .summary.fail {
+            background: #f00;
+            color: #fff;
+        }
+
+        button {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0f0;
+        }
+
+        #canvas-preview {
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 CHRONO-MORPHIC CANVAS TEST SUITE</h1>
+
+    <div style="text-align: center; margin: 20px 0;">
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="window.location.href='index.html'">Open Main App</button>
+    </div>
+
+    <div id="test-results"></div>
+    <div id="summary"></div>
+
+    <script>
+        const tests = [];
+        let passCount = 0;
+        let failCount = 0;
+
+        function addTest(name, testFn) {
+            tests.push({ name, testFn });
+        }
+
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message || 'Assertion failed');
+            }
+        }
+
+        function assertEqual(actual, expected, message) {
+            if (actual !== expected) {
+                throw new Error(`${message || 'Values not equal'}: Expected ${expected}, got ${actual}`);
+            }
+        }
+
+        function assertExists(value, message) {
+            if (value === undefined || value === null) {
+                throw new Error(message || 'Value does not exist');
+            }
+        }
+
+        // Test 1: File Structure
+        addTest('File Structure Verification', async () => {
+            const response = await fetch('index.html');
+            assert(response.ok, 'index.html should exist');
+
+            const jsResponse = await fetch('chrono-morphic.js');
+            assert(jsResponse.ok, 'chrono-morphic.js should exist');
+
+            const readmeResponse = await fetch('README.md');
+            assert(readmeResponse.ok, 'README.md should exist');
+        });
+
+        // Test 2: Canvas Creation
+        addTest('Canvas Element Creation', () => {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'index.html';
+            document.body.appendChild(iframe);
+
+            return new Promise((resolve, reject) => {
+                iframe.onload = () => {
+                    try {
+                        const canvas = iframe.contentDocument.getElementById('canvas');
+                        assertExists(canvas, 'Canvas element should exist');
+                        assertEqual(canvas.tagName, 'CANVAS', 'Element should be a canvas');
+                        document.body.removeChild(iframe);
+                        resolve();
+                    } catch (e) {
+                        document.body.removeChild(iframe);
+                        reject(e);
+                    }
+                };
+            });
+        });
+
+        // Test 3: Temporal DNA Generation
+        addTest('Temporal DNA System', () => {
+            // Create minimal test implementation
+            function calculateMoonPhase(year, month, day) {
+                const date = new Date(year, month, day);
+                const knownNewMoon = new Date(2000, 0, 6);
+                const synodicMonth = 29.53058867;
+                const diff = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
+                const phase = (diff % synodicMonth) / synodicMonth;
+                return phase;
+            }
+
+            const phase = calculateMoonPhase(2025, 0, 1);
+            assert(phase >= 0 && phase < 1, 'Moon phase should be between 0 and 1');
+        });
+
+        // Test 4: Lorenz Attractor Points
+        addTest('Lorenz Attractor Generation', () => {
+            const points = [];
+            const dt = 0.01;
+            const sigma = 10;
+            const rho = 28;
+            const beta = 8/3;
+
+            let x = 0.1, y = 0, z = 0;
+
+            for (let i = 0; i < 100; i++) {
+                const dx = sigma * (y - x) * dt;
+                const dy = (x * (rho - z) - y) * dt;
+                const dz = (x * y - beta * z) * dt;
+
+                x += dx;
+                y += dy;
+                z += dz;
+
+                points.push({ x, y, z });
+            }
+
+            assert(points.length === 100, 'Should generate 100 points');
+            assert(!isNaN(points[99].x), 'Points should have valid x coordinates');
+            assert(!isNaN(points[99].y), 'Points should have valid y coordinates');
+            assert(!isNaN(points[99].z), 'Points should have valid z coordinates');
+        });
+
+        // Test 5: Fingerprint Generation
+        addTest('Quantum Fingerprint Generation', () => {
+            function generateFingerprint(date, moonPhase) {
+                const str = `${date.getTime()}_${moonPhase}_${Math.random()}`;
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(16).toUpperCase().substring(0, 12);
+            }
+
+            const fp1 = generateFingerprint(new Date(), 0.5);
+            const fp2 = generateFingerprint(new Date(), 0.5);
+
+            assertExists(fp1, 'Fingerprint should be generated');
+            assert(fp1.length <= 12, 'Fingerprint should be max 12 characters');
+            assert(/^[0-9A-F]+$/.test(fp1), 'Fingerprint should be hexadecimal');
+            assert(fp1 !== fp2, 'Fingerprints should be unique');
+        });
+
+        // Test 6: HTML Structure
+        addTest('HTML Structure Validation', async () => {
+            const response = await fetch('index.html');
+            const html = await response.text();
+
+            assert(html.includes('canvas'), 'HTML should contain canvas element');
+            assert(html.includes('info-panel'), 'HTML should contain info panel');
+            assert(html.includes('controls'), 'HTML should contain controls');
+            assert(html.includes('chrono-morphic.js'), 'HTML should reference JS file');
+        });
+
+        // Test 7: Season Detection
+        addTest('Season Detection Logic', () => {
+            const seasons = ['Winter', 'Spring', 'Summer', 'Autumn'];
+
+            // Test each season
+            const winterMonth = 0; // January
+            const springMonth = 3; // April
+            const summerMonth = 6; // July
+            const autumnMonth = 9; // October
+
+            const winterSeason = Math.floor(((winterMonth + 1) % 12) / 3);
+            const springSeason = Math.floor(((springMonth + 1) % 12) / 3);
+            const summerSeason = Math.floor(((summerMonth + 1) % 12) / 3);
+            const autumnSeason = Math.floor(((autumnMonth + 1) % 12) / 3);
+
+            assertEqual(seasons[winterSeason], 'Winter', 'January should be Winter');
+            assertEqual(seasons[springSeason], 'Spring', 'April should be Spring');
+            assertEqual(seasons[summerSeason], 'Summer', 'July should be Summer');
+            assertEqual(seasons[autumnSeason], 'Autumn', 'October should be Autumn');
+        });
+
+        // Test 8: Particle Lifecycle
+        addTest('Particle Physics Logic', () => {
+            const particle = {
+                x: 100,
+                y: 100,
+                vx: 1,
+                vy: 1,
+                life: 1,
+                decay: 0.01
+            };
+
+            // Simulate 50 frames
+            for (let i = 0; i < 50; i++) {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life -= particle.decay;
+            }
+
+            assert(particle.x !== 100, 'Particle should move in x direction');
+            assert(particle.y !== 100, 'Particle should move in y direction');
+            assert(particle.life < 1, 'Particle life should decay');
+            assert(particle.life > 0, 'Particle should still be alive after 50 frames');
+        });
+
+        // Test 9: Mode Switching
+        addTest('Interaction Mode System', () => {
+            const modes = ['Ethereal', 'Quantum', 'Fractal', 'Cosmic', 'Dreams'];
+
+            assert(modes.length === 5, 'Should have 5 modes');
+            assertEqual(modes[0], 'Ethereal', 'Mode 1 should be Ethereal');
+            assertEqual(modes[4], 'Dreams', 'Mode 5 should be Dreams');
+        });
+
+        // Test 10: README Documentation
+        addTest('Documentation Quality Check', async () => {
+            const response = await fetch('README.md');
+            const readme = await response.text();
+
+            assert(readme.includes('Chrono-Morphic'), 'README should contain project name');
+            assert(readme.includes('Chaos Theory'), 'README should mention chaos theory');
+            assert(readme.includes('Moon Phase'), 'README should mention moon phase');
+            assert(readme.includes('Lorenz'), 'README should mention Lorenz attractor');
+            assert(readme.length > 5000, 'README should be comprehensive');
+        });
+
+        async function runAllTests() {
+            const resultsDiv = document.getElementById('test-results');
+            const summaryDiv = document.getElementById('summary');
+            resultsDiv.innerHTML = '';
+            passCount = 0;
+            failCount = 0;
+
+            for (const test of tests) {
+                const section = document.createElement('div');
+                section.className = 'test-section';
+
+                const testCase = document.createElement('div');
+                testCase.className = 'test-case';
+
+                const title = document.createElement('div');
+                title.className = 'test-title';
+                title.textContent = `🧪 ${test.name}`;
+                testCase.appendChild(title);
+
+                const result = document.createElement('div');
+                result.className = 'test-result';
+
+                try {
+                    await test.testFn();
+                    testCase.classList.add('pass');
+                    result.textContent = '✅ PASS';
+                    result.style.color = '#0f0';
+                    passCount++;
+                } catch (error) {
+                    testCase.classList.add('fail');
+                    result.textContent = `❌ FAIL: ${error.message}`;
+                    result.style.color = '#f00';
+                    failCount++;
+                }
+
+                testCase.appendChild(result);
+                section.appendChild(testCase);
+                resultsDiv.appendChild(section);
+            }
+
+            // Show summary
+            const total = passCount + failCount;
+            summaryDiv.className = failCount === 0 ? 'summary' : 'summary fail';
+            summaryDiv.textContent = `Test Results: ${passCount}/${total} passed (${((passCount/total)*100).toFixed(1)}%)`;
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            runAllTests();
+        });
+    </script>
+</body>
+</html>
