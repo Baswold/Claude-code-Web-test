@@ -1,20 +1,79 @@
-# 🌌 CHRONO-MORPHIC CANVAS
+# 🧠 Claude Code Memory Sync Demo + Interactive Art
 
-**A Living Artwork Born from the Intersection of Time, Chaos, and Consciousness**
+**Demonstrating efficient cross-session memory synchronization for Claude AI**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg)](LICENSE)
 [![Made with JavaScript](https://img.shields.io/badge/Made%20with-JavaScript-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Web Audio API](https://img.shields.io/badge/Web%20Audio-API-purple.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 
-## 🎨 What Is This?
+---
 
-Chrono-Morphic Canvas is an **experimental interactive art experience** that exists at the intersection of multiple disciplines:
+## 📂 Repository Contents
 
-- **Chaos Theory** - Utilizes strange attractors (Lorenz equations) to generate never-repeating patterns
-- **Temporal Dynamics** - The artwork evolves based on real-time, date, moon phase, and seasons
-- **Generative Soundscapes** - Audio that responds to your interactions and the temporal state
-- **Particle Physics Simulation** - Thousands of particles with emergent behaviors
-- **Quantum Memory** - Each session generates a unique "fingerprint" that will never occur again
+This repository contains multiple demonstrations for Anthropic:
+
+### 🧠 **1. Claude Memory Sync System** ⭐ NEW!
+A proof-of-concept showing how Claude's memory could sync across all platforms (Claude.ai, Claude Code, API) using the same efficient file-based approach Claude already uses.
+
+**Key Innovation:** No vector databases needed - just simple markdown files loaded into Claude's large context window.
+
+- **Files:** `memory-system.js`, `fake-claude-cli.html`, `MEMORY-SYNC-DEMO.md`
+- **[Read Full Documentation →](MEMORY-SYNC-DEMO.md)**
+- **Try It:** Open `fake-claude-cli.html` in your browser
+
+### 🪞 **2. Consciousness Mirror**
+A philosophical tool for self-reflection and consciousness exploration.
+
+- **File:** `consciousness-mirror.html`
+- **[Read Full Documentation →](CONSCIOUSNESS-MIRROR.md)**
+
+### 🌌 **3. Chrono-Morphic Canvas**
+An experimental interactive art experience at the intersection of chaos theory, temporal dynamics, and generative art.
+
+- **File:** `index.html`
+- Chaos Theory, Temporal Dynamics, Generative Soundscapes, Particle Physics
+- Each session generates a unique "fingerprint" that will never occur again
+
+---
+
+## 🚀 Quick Start - Memory Sync Demo
+
+The **Memory Sync System** demonstrates how Claude could maintain memory across all platforms using a simple, efficient file-based approach.
+
+### Try It Now:
+
+```bash
+# Clone the repository
+git clone https://github.com/Baswold/Claude-code-Web-test.git
+cd Claude-code-Web-test
+
+# Open the demo in your browser
+open fake-claude-cli.html
+```
+
+### What You'll See:
+
+1. **Terminal Interface** - A Claude Code CLI simulator
+2. **Memory Operations** - Create, view, search, and manage memories
+3. **Persistence** - Refresh the page - your memory stays!
+4. **Live Demo Commands:**
+   - `demo conversation` - Simulate a conversation memory
+   - `demo project` - Simulate project context memory
+   - `memory list` - See all stored memories
+   - `memory search [query]` - Search across memories
+   - `export` - Export memory as JSON
+
+### Why This Matters:
+
+**Current Problem:** Memory doesn't sync between Claude.ai, Claude Code, and API
+**This Solution:** Simple file-based memory that works everywhere
+**Key Benefit:** Uses Claude's existing approach - no new infrastructure needed
+
+**[Read the full technical documentation →](MEMORY-SYNC-DEMO.md)**
+
+---
+
+## 🌌 Chrono-Morphic Canvas - Full Details
 
 ## ✨ Features
 

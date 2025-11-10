@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code CLI - Memory Sync Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #0a0a0a;
+      color: #00ff00;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      border-bottom: 2px solid #00ff00;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: #00aa00;
+      margin-top: 5px;
+    }
+
+    .terminal {
+      background: #000;
+      border: 2px solid #00ff00;
+      border-radius: 5px;
+      padding: 20px;
+      min-height: 400px;
+      max-height: 600px;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+      margin-bottom: 20px;
+    }
+
+    .output-line {
+      margin: 5px 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .output-line.user {
+      color: #00ffff;
+    }
+
+    .output-line.system {
+      color: #ffaa00;
+    }
+
+    .output-line.error {
+      color: #ff0000;
+    }
+
+    .output-line.success {
+      color: #00ff00;
+    }
+
+    .output-line.info {
+      color: #aaaaaa;
+    }
+
+    .prompt {
+      color: #00ff00;
+      font-weight: bold;
+    }
+
+    .input-container {
+      display: flex;
+      align-items: center;
+      background: #000;
+      border: 2px solid #00ff00;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    .input-container .prompt-symbol {
+      color: #00ff00;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    #command-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #00ffff;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .command-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .command-btn {
+      background: #001100;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .command-btn:hover {
+      background: #003300;
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    }
+
+    .memory-viewer {
+      background: #001100;
+      border: 2px solid #00aa00;
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .memory-viewer h3 {
+      color: #00ff00;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #00aa00;
+      padding-bottom: 5px;
+    }
+
+    .memory-file {
+      background: #000;
+      border-left: 3px solid #00ff00;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .memory-file .file-name {
+      color: #00ffff;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .memory-file .file-content {
+      color: #00aa00;
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      padding: 15px;
+      background: #001100;
+      border: 1px solid #00aa00;
+      border-radius: 5px;
+    }
+
+    .stat-item {
+      flex: 1;
+    }
+
+    .stat-label {
+      color: #00aa00;
+      font-size: 12px;
+    }
+
+    .stat-value {
+      color: #00ff00;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .blink {
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚡ CLAUDE CODE CLI - MEMORY SYNC DEMO</h1>
+      <div class="subtitle">Demonstrating efficient file-based memory synchronization across sessions</div>
+      <div class="subtitle">Session ID: <span id="session-id"></span></div>
+    </div>
+
+    <div class="terminal" id="terminal"></div>
+
+    <div class="input-container">
+      <span class="prompt-symbol">claude&gt;</span>
+      <input type="text" id="command-input" placeholder="Type a command or try the buttons below..." autocomplete="off">
+    </div>
+
+    <div class="command-buttons">
+      <button class="command-btn" onclick="runCommand('memory create')">📝 Create Memory</button>
+      <button class="command-btn" onclick="runCommand('memory view')">👁️ View Memory</button>
+      <button class="command-btn" onclick="runCommand('memory list')">📋 List All</button>
+      <button class="command-btn" onclick="runCommand('memory search user')">🔍 Search</button>
+      <button class="command-btn" onclick="runCommand('demo conversation')">💬 Demo Conversation</button>
+      <button class="command-btn" onclick="runCommand('demo project')">🚀 Demo Project</button>
+      <button class="command-btn" onclick="runCommand('export')">💾 Export</button>
+      <button class="command-btn" onclick="runCommand('help')">❓ Help</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-label">Memory Files</div>
+        <div class="stat-value" id="stat-files">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Total Size</div>
+        <div class="stat-value" id="stat-size">0 KB</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Commands Run</div>
+        <div class="stat-value" id="stat-commands">0</div>
+      </div>
+    </div>
+
+    <div class="memory-viewer" id="memory-viewer">
+      <h3>📁 Current Memory State</h3>
+      <div id="memory-content">
+        <div class="output-line info">No memory files yet. Use commands to create memories.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="memory-system.js"></script>
+  <script>
+    // Initialize memory system
+    const memory = new MemorySystem('localStorage');
+    let commandCount = 0;
+
+    // Display session ID
+    document.getElementById('session-id').textContent = memory.sessionId;
+
+    // Terminal output
+    const terminal = document.getElementById('terminal');
+
+    function printToTerminal(text, type = 'info') {
+      const line = document.createElement('div');
+      line.className = `output-line ${type}`;
+      line.textContent = text;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function printObject(obj, indent = 0) {
+      const spaces = '  '.repeat(indent);
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'object' && value !== null) {
+          printToTerminal(`${spaces}${key}:`, 'info');
+          printObject(value, indent + 1);
+        } else {
+          printToTerminal(`${spaces}${key}: ${value}`, 'info');
+        }
+      }
+    }
+
+    function updateStats() {
+      const list = memory.list();
+      let totalSize = 0;
+      list.files.forEach(f => totalSize += f.size);
+
+      document.getElementById('stat-files').textContent = list.count;
+      document.getElementById('stat-size').textContent = (totalSize / 1024).toFixed(2) + ' KB';
+      document.getElementById('stat-commands').textContent = commandCount;
+    }
+
+    function updateMemoryViewer() {
+      const list = memory.list();
+      const container = document.getElementById('memory-content');
+      container.innerHTML = '';
+
+      if (list.count === 0) {
+        container.innerHTML = '<div class="output-line info">No memory files yet.</div>';
+        return;
+      }
+
+      list.files.forEach(file => {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'memory-file';
+
+        const fileName = document.createElement('div');
+        fileName.className = 'file-name';
+        fileName.textContent = `📄 ${file.name} (${file.lines} lines, ${file.size} bytes)`;
+
+        const fileContent = document.createElement('div');
+        fileContent.className = 'file-content';
+        const view = memory.view(file.name);
+        fileContent.textContent = view.content.substring(0, 500) + (view.content.length > 500 ? '...' : '');
+
+        fileDiv.appendChild(fileName);
+        fileDiv.appendChild(fileContent);
+        container.appendChild(fileDiv);
+      });
+    }
+
+    function runCommand(cmd) {
+      commandCount++;
+      printToTerminal(`claude> ${cmd}`, 'user');
+
+      const parts = cmd.trim().split(' ');
+      const mainCmd = parts[0].toLowerCase();
+      const subCmd = parts[1]?.toLowerCase();
+
+      try {
+        switch (mainCmd) {
+          case 'memory':
+            handleMemoryCommand(subCmd, parts.slice(2));
+            break;
+
+          case 'demo':
+            handleDemoCommand(subCmd);
+            break;
+
+          case 'export':
+            handleExport();
+            break;
+
+          case 'import':
+            handleImport();
+            break;
+
+          case 'clear':
+            terminal.innerHTML = '';
+            printToTerminal('Terminal cleared.', 'success');
+            break;
+
+          case 'help':
+            showHelp();
+            break;
+
+          default:
+            printToTerminal(`Unknown command: ${mainCmd}`, 'error');
+            printToTerminal('Type "help" for available commands.', 'info');
+        }
+      } catch (error) {
+        printToTerminal(`Error: ${error.message}`, 'error');
+      }
+
+      updateStats();
+      updateMemoryViewer();
+    }
+
+    function handleMemoryCommand(subCmd, args) {
+      switch (subCmd) {
+        case 'create': {
+          const fileName = args[0] || 'CLAUDE.md';
+          const content = args.slice(1).join(' ') || 'Sample memory content';
+          const result = memory.create(fileName, content, { type: 'demo' });
+          if (result.success) {
+            printToTerminal(`✓ ${result.message}`, 'success');
+          } else {
+            printToTerminal(`✗ ${result.error}`, 'error');
+          }
+          break;
+        }
+
+        case 'view': {
+          const fileName = args[0] || 'CLAUDE.md';
+          const result = memory.view(fileName);
+          if (result.success) {
+            printToTerminal(`\n=== ${result.fileName} ===`, 'system');
+            printToTerminal(result.content, 'info');
+            printToTerminal(`\n(${result.lines} lines, ${result.size} bytes)`, 'info');
+          } else {
+            printToTerminal(`✗ ${result.error}`, 'error');
+          }
+          break;
+        }
+
+        case 'list': {
+          const result = memory.list();
+          printToTerminal(`\n📋 Memory Files (${result.count}):`, 'system');
+          result.files.forEach(file => {
+            printToTerminal(`  • ${file.name} - ${file.lines} lines, ${file.size} bytes`, 'info');
+          });
+          break;
+        }
+
+        case 'search': {
+          const query = args.join(' ');
+          if (!query) {
+            printToTerminal('✗ Please provide a search query', 'error');
+            return;
+          }
+          const result = memory.search(query);
+          printToTerminal(`\n🔍 Search results for "${query}": ${result.count} matches`, 'system');
+          result.results.slice(0, 10).forEach(r => {
+            printToTerminal(`  ${r.fileName}:${r.lineNumber} - ${r.line}`, 'info');
+          });
+          if (result.count > 10) {
+            printToTerminal(`  ... and ${result.count - 10} more`, 'info');
+          }
+          break;
+        }
+
+        case 'delete': {
+          const fileName = args[0];
+          if (!fileName) {
+            printToTerminal('✗ Please specify a file name', 'error');
+            return;
+          }
+          const result = memory.delete(fileName);
+          if (result.success) {
+            printToTerminal(`✓ ${result.message}`, 'success');
+          } else {
+            printToTerminal(`✗ ${result.error}`, 'error');
+          }
+          break;
+        }
+
+        default:
+          printToTerminal(`✗ Unknown memory command: ${subCmd}`, 'error');
+          printToTerminal('Available: create, view, list, search, delete', 'info');
+      }
+    }
+
+    function handleDemoCommand(type) {
+      switch (type) {
+        case 'conversation':
+          demoConversation();
+          break;
+
+        case 'project':
+          demoProject();
+          break;
+
+        default:
+          printToTerminal('✗ Unknown demo type. Try: conversation, project', 'error');
+      }
+    }
+
+    function demoConversation() {
+      printToTerminal('\n🎭 Running Conversation Demo...', 'system');
+
+      // Simulate a conversation being stored in memory
+      const conversationMemory = `# Conversation History
+
+## User Preferences
+- Prefers concise responses
+- Working on a React project
+- Timezone: PST
+
+## Recent Topics
+- Discussed memory synchronization
+- Asked about Claude's capabilities
+- Interested in file-based systems
+
+## Code Context
+- Using React 18
+- TypeScript enabled
+- Prefers functional components`;
+
+      const result = memory.create('conversation_history.md', conversationMemory, {
+        type: 'conversation',
+        timestamp: new Date().toISOString()
+      });
+
+      if (result.success) {
+        printToTerminal('✓ Conversation memory created', 'success');
+        printToTerminal('  This memory will persist across sessions!', 'info');
+        printToTerminal('  Try refreshing the page - your memory will still be here.', 'info');
+      }
+    }
+
+    function demoProject() {
+      printToTerminal('\n🚀 Running Project Demo...', 'system');
+
+      const projectMemory = `# Project: Claude Memory Sync
+
+## Project Overview
+Building a demonstration of Claude's efficient memory sync system.
+
+## Architecture Decisions
+- File-based storage (no vector DB)
+- Markdown format for human readability
+- Client-side storage with localStorage
+- 6 core operations: view, create, str_replace, insert, delete, rename
+
+## Key Features
+- Session persistence
+- Memory sync across contexts
+- Simple, efficient design
+- No complex embeddings needed
+
+## Next Steps
+- [ ] Add remote sync capability
+- [ ] Implement conflict resolution
+- [ ] Build visual diff viewer
+- [ ] Create API for Claude to use`;
+
+      const result = memory.create('project_memory.md', projectMemory, {
+        type: 'project',
+        timestamp: new Date().toISOString()
+      });
+
+      if (result.success) {
+        printToTerminal('✓ Project memory created', 'success');
+        printToTerminal('  Memory is now available for AI context!', 'info');
+        printToTerminal(`  Context size: ${memory.getFullMemoryContext().length} chars`, 'info');
+      }
+    }
+
+    function handleExport() {
+      const data = memory.exportAsJson();
+      const json = JSON.stringify(data, null, 2);
+
+      printToTerminal('\n💾 Exporting memory...', 'system');
+      printToTerminal(`Exported ${data.files.length} files`, 'success');
+      printToTerminal('JSON data:', 'info');
+      printToTerminal(json.substring(0, 500) + '...', 'info');
+
+      // Copy to clipboard
+      navigator.clipboard.writeText(json).then(() => {
+        printToTerminal('✓ Copied to clipboard!', 'success');
+      }).catch(() => {
+        printToTerminal('⚠ Could not copy to clipboard', 'error');
+      });
+    }
+
+    function handleImport() {
+      printToTerminal('Import functionality coming soon!', 'info');
+      printToTerminal('For now, use the browser console: memory.importFromJson(data)', 'info');
+    }
+
+    function showHelp() {
+      printToTerminal('\n📖 Available Commands:', 'system');
+      printToTerminal('', 'info');
+      printToTerminal('Memory Commands:', 'success');
+      printToTerminal('  memory create [filename] [content] - Create new memory file', 'info');
+      printToTerminal('  memory view [filename]            - View memory file contents', 'info');
+      printToTerminal('  memory list                       - List all memory files', 'info');
+      printToTerminal('  memory search [query]             - Search memory content', 'info');
+      printToTerminal('  memory delete [filename]          - Delete memory file', 'info');
+      printToTerminal('', 'info');
+      printToTerminal('Demo Commands:', 'success');
+      printToTerminal('  demo conversation  - Simulate conversation memory', 'info');
+      printToTerminal('  demo project       - Simulate project memory', 'info');
+      printToTerminal('', 'info');
+      printToTerminal('Utility Commands:', 'success');
+      printToTerminal('  export  - Export all memory as JSON', 'info');
+      printToTerminal('  clear   - Clear terminal', 'info');
+      printToTerminal('  help    - Show this help', 'info');
+    }
+
+    // Handle enter key
+    document.getElementById('command-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const cmd = e.target.value.trim();
+        if (cmd) {
+          runCommand(cmd);
+          e.target.value = '';
+        }
+      }
+    });
+
+    // Initial messages
+    printToTerminal('═══════════════════════════════════════════════════════', 'system');
+    printToTerminal('  CLAUDE CODE CLI - MEMORY SYNC DEMONSTRATION', 'system');
+    printToTerminal('  Showing how Claude\'s memory works under the hood', 'system');
+    printToTerminal('═══════════════════════════════════════════════════════', 'system');
+    printToTerminal('', 'info');
+    printToTerminal('🧠 Memory System Initialized', 'success');
+    printToTerminal(`📍 Session: ${memory.sessionId}`, 'info');
+    printToTerminal(`💾 Storage: ${memory.storageBackend}`, 'info');
+    printToTerminal('', 'info');
+    printToTerminal('Type "help" for available commands, or click a button below.', 'info');
+    printToTerminal('Try "demo conversation" or "demo project" to see memory in action!', 'info');
+    printToTerminal('', 'info');
+
+    // Load existing memory if any
+    const existing = memory.list();
+    if (existing.count > 0) {
+      printToTerminal(`✓ Loaded ${existing.count} existing memory files from previous session`, 'success');
+    }
+
+    // Initial stats update
+    updateStats();
+    updateMemoryViewer();
+  </script>
+</body>
+</html>
